@@ -408,14 +408,30 @@
 
 	/*--------------------------QUERY BASIC-----------------------------*/
 	/*
-	1.	Select <Danh sách các thuộc tính>
+	1.	Select [DISTINCT] <Danh sách các thuộc tính> [as Alias]
 		From <Danh sách các table hoặc Query hoặc [as Alias] > 
-		[Where <điều kiện>]
-		[Group by <danh sách các thuộc tính>]
-		[Having <điều kiện>]  // điều kiện sau khi gom nhóm hoặc sử dụng các hàm thống kê.
+		[Where <điều kiện> [AND/OR]
+		[Group by <danh sách các thuộc tính>] 
+		[Having <điều kiện nhóm>]  // điều kiện sau khi gom nhóm hoặc sử dụng các hàm thống kê.
 		[Order by <Danh sách các thuộc tính [ASC | DESC] >]
+		[UNIO/INTERSET/EXCEPT <câu truy vấn khác (*)>]
+		+ Sau SELECT:
+			- DISTINCT: liệt kệ những giá trị duy nhất, tránh trùng lặp
+			- Danh sách các thuộc tính, đổi tên thuộc tính với AS, *: lấy tất cả thuộc tính
+			- Sử dụng hàm thống kê. (SUM, MAX, MIN,...)
+		+ SAu FROM:
+			- Một hoặc danh sách các bảng (có thể đặt bí danh)
+		+ Sau WHERE:
+			- Toán tử số học + - * /
+			- Toán tử so sánh: ANY(giá trị nào đó trong 1 tập hợp) hoặc ALL(tất cả các giá trị trong tập hợp)
+			- Toán tử logic: AND, OR, NOT
+			- Toán tử tập hợp: UNION, INTERSET, EXCEPT(MINUS)
+			- Quan hệ bao hàm: IN, NOT IN, CONTAINS, DOES NOT CONTAIN
+			- Điều kiện tồn tại: EXISTS, NOT EXITS
+		+ Hàm tính toán: 
+			- SELECT các hàm tính toán FROM <table>
 
-	2.	LIKE, NOT, AND, OR, IN, BETWEEN, IS NULL, NOT NULL
+	2.	LIKE, NOT, AND, OR, IN, BETWEEN, IS NULL, IS NOT NULL
 		YEAR(NgaySinh) 
 		(=> nằm tại điều kiện where)
 	3.  TOP:
@@ -427,21 +443,27 @@
 		[ ]: đại diện 1 khoảng nào đó.
 	5. 
 		getdate(): lấy ra ngày hệ thống
-		year,mouth, day
-		datediff: tính khoảng cách giữa 2 khoảng thời gian
-	6. Len : lấy độ dài ký tự
+		year,mouth, day: 
+		datediff(d, ngaybatdau,ngayketthuc): tính khoảng cách giữa 2 khoảng thời gian
+	6.	Len : lấy độ dài ký tự
 		Cast: cast(Luong as varchar): chuyển Luong thành kiểu varchar
 	7. Các phép toán tập hợp:
-		select from where
+		select from where group by order
 			union(hợp: + 2 bảng thành 1 bảng- không trùng, union all: hợp lấy trùng)| 
-			intersect(giao:  phần giao, lấy những cột giống nhau ) |
+				- Có 3 cách thể hiện: UNION, Truy vấn lồng: EXISTS, IN
+			intersect(giao:  phần giao, lấy những cột giống nhau, bên này(Bảng A) có bên này(Bảng B) cũng có) |
+				- có 3 cách thể hiện: intersect, exists, in
 			except(trừ, loại bỏ: trên trừ cho dưới, select 1- select 2, bảng 1 - bảng 2- đã truy vấn)
-		select from where
+				- Có 3 cách thể hiện phép trừ: except, not exists, not in.
+		select from where group by order
 		Luu y: 
 			- Các cột phải giống nhau, cùng kiểu dữ liệu.
 			- Sử dụng cho > 2 câu lệnh select
 	8. Join:
 		inner join: 
+		left join:
+		right join:
+	9. 
 
 	*/
 	--- Question 1: Cho biết họ tên và lương của tất cả Giáo Viên
@@ -490,18 +512,108 @@
 	where GVQLCM is null)
 
 	--- Question 6: 
-	-- Join: lấy phần giao
+	-- Join(inner join): lấy phần giao
 	select HOTEN, TENBM
 	from GIAOVIEN 
 	join BOMON
 	on GIAOVIEN.MaBM = BOMON.MABM
-	-- left join: cái bảng bên trái và phần giao.
+	-- left join:  bảng bên trái và phần giao.
+	-- right join: bảng bên phải và phần giao. 
+	-- full join: left + right
+
+	--- Question 7: Tìm những giáo viên không tham gia đề tài.
+	-- Except :
+	-- not in :
+	-- not exists : (use nhiều)
+	--- Ba toán từ trên về bản chất là giống nhau.
+	-- lấy giáo viên đã có - các giáo viên đã tham gia đề tài
+	select MAGV, HOTEN as N'Những giáo viên đã tham gia đề tài'
+	from GIAOVIEN
+	except
+	select THAMGIADT.MaGV, GIAOVIEN.HOTEN
+	from THAMGIADT join GIAOVIEN
+	on GIAOVIEN.MAGV = THAMGIADT.MAGV
+	 
+	select MaGV, HOTEN
+	from GIAOVIEN
+	where MAGV not in (select MAGV 
+						from THAMGIADT)
+	
+	select MaGV, HOTEN
+	from GIAOVIEN
+	where not exists (select MAGV 
+						from THAMGIADT 
+						where GIAOVIEN.MAGV = THAMGIADT.MAGV)-- nhớ là có điều kiện =.
+
+	--- Question 8: Tìm những giáo viên vừa tham gia đề tài vừa là trưởng bộ môn
+	-- INTERSECT: 
+	-- EXISTS:
+	-- IN:
+
+	(select THAMGIADT.MAGV , HOTEN as N'Những giáo viên tham gia đề tài'
+	from THAMGIADT join GIAOVIEN on GIAOVIEN.MAGV = THAMGIADT.MAGV)
+	intersect 
+	(select TRUONGBM, HOTEN  -- TRuongBM đây chính là MaGV nha.
+	from BOMON join GIAOVIEN on GIAOVIEN.MAGV = BOMON.TRUONGBM)
 
 
+	select MAGV, HOTEN as  N'Những giáo viên tham gia đề tài'
+	from GIAOVIEN
+	where 
+			exists (select TRUONGBM 
+					from BOMON
+					where GIAOVIEN.MAGV = BOMON.TRUONGBM
+					)
+			and
+			exists (select MAGV 
+					from THAMGIADT
+					where GIAOVIEN.MAGV = THAMGIADT.MAGV
+					)
+
+	select MaGV, HOTEN as  N'Những giáo viên tham gia đề tài'
+	from GIAOVIEN
+	where 
+			MaGV in (select TRUONGBM from BOMON)
+			and
+			MaGV in(select MAGV from THAMGIADT)
+
+	--- Question 9: Liệt kê những giáo viên có tham gia đề tài và những giáo viên là trưởng bộ môn:
+	--- UNION:
+	select THAMGIADT.MAGV , HOTEN
+	from THAMGIADT join GIAOVIEN on GIAOVIEN.MAGV = THAMGIADT.MAGV
+	UNION
+	select TRUONGBM, HOTEN
+	from BOMON join GIAOVIEN on GIAOVIEN.MAGV = BOMON.TRUONGBM
+
+	select THAMGIADT.MAGV , HOTEN
+	from THAMGIADT join GIAOVIEN on GIAOVIEN.MAGV = THAMGIADT.MAGV
+	UNION ALL
+	select TRUONGBM, HOTEN
+	from BOMON join GIAOVIEN on GIAOVIEN.MAGV = BOMON.TRUONGBM
+
+	--- EXISTS:
+	select MAGV, HOTEN 
+	from GIAOVIEN
+	where 
+		exists (select MaGV from THAMGIADT
+				where GIAOVIEN.MAGV = THAMGIADT.MAGV
+		)
+		or
+		exists (select TRUONGBM from BOMON
+				where GIAOVIEN.MAGV = BOMON.TRUONGBM
+		)
+	--- IN:
+	select MAGV , HOTEN
+	from GIAOVIEN
+	where 
+		MAGV in (select MAGV from THAMGIADT)
+		or
+		MAGV in (select TRUONGBM from BOMON)
 
 
+	
 	Select * from THAMGIADT
-	Select * from KHOA
+	--Select * from KHOA
 	Select * from BOMON
 	Select * from CONGVIEC
 	Select * from DETAI
@@ -510,11 +622,11 @@
 	Select * from NGUOITHAN
 	Select * from GV_DT
 	/*
-		Select <Danh sách các thuộc tính>
+		Select [DISTINCT] <Danh sách các thuộc tính> [as Alias]
 		From <Danh sách các table hoặc Query hoặc [as Alias] > 
-		[Where <điều kiện>]
-		[Group by <danh sách các thuộc tính>]
-		[Having <điều kiện>]  // điều kiện sau khi gom nhóm hoặc sử dụng các hàm thống kê.
+		[Where <điều kiện> [AND/OR]
+		[Group by <danh sách các thuộc tính>] 
+		[Having <điều kiện nhóm>]  // điều kiện sau khi gom nhóm hoặc sử dụng các hàm thống kê.
 		[Order by <Danh sách các thuộc tính [ASC | DESC] >]
-
+		[UNIO/INTERSET/EXCEPT <câu truy vấn khác (*)>]
 	*/
