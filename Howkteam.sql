@@ -440,6 +440,9 @@
 		Luu y: 
 			- Các cột phải giống nhau, cùng kiểu dữ liệu.
 			- Sử dụng cho > 2 câu lệnh select
+	8. Join:
+		inner join: 
+
 	*/
 	--- Question 1: Cho biết họ tên và lương của tất cả Giáo Viên
 	select HOTEN, LUONG
@@ -486,6 +489,13 @@
 	from GIAOVIEN
 	where GVQLCM is null)
 
+	--- Question 6: 
+	-- Join: lấy phần giao
+	select HOTEN, TENBM
+	from GIAOVIEN 
+	join BOMON
+	on GIAOVIEN.MaBM = BOMON.MABM
+	-- left join: cái bảng bên trái và phần giao.
 
 
 
