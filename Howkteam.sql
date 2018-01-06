@@ -654,8 +654,13 @@
 
 	--- Question 10: Tìm các giáo viên mà tham gia tất cả các đề tài.
 	-- Phép chia: (có từ tất cả) - (phủ định lại ý nghĩa của đề bài)
-	-- Use not exists:
-	-- Trong bảng ThamGiaDT có 1 MaGV có tất cả các đề tài.
+	-- Use not exists: 
+	-- Tập bị chia: ThamGiaDT(MaGV)
+	-- Tập chia: DeTai(MaDT)
+
+	-- Tìm các giáo viên
+	-- Mà không có đề tài nào
+	-- Mà đề tài đó không được làm
 
 	select distinct TG1.MAGV, HOTEN as N'Tên giáo viên tham gia tất cả đề tài'
 	from THAMGIADT as TG1
@@ -670,6 +675,11 @@
 												DETAI.MADT = TG2.MADT						
 										)
 					)
+
+	----------------Tìm tên các giáo viên 'HTTT' mà tham gia tất cả đề tài thuộc chủ đề 'QLGD'
+
+
+
 	-- Use EXCEPT:
 
 	-- Use Group by:
@@ -737,7 +747,7 @@
 	--- Question 14: Tìm những giáo viên có lương lớn hơn lương của GV có mã '001'
 	select MAGV, HOTEN, LUONG
 	from GIAOVIEN
-	where LUONG >
+	where	LUONG >
 			(select LUONG   --- lấy 1 giá trị để so sánh
 			from GIAOVIEN 
 			where  MAGV = '001'
@@ -748,10 +758,11 @@
 	select top(1) MAGV, HOTEN, LUONG
 	from GIAOVIEN
 	where LUONG >
-			(select LUONG   --- lấy 1 giá trị để so sánh
+			(select LUONG   --- lấy 1 giá trị để so sánh, là 1 giá trị
 			from GIAOVIEN 
 			where  MAGV = '001'
 			)
+	
 		
 	--- Question 15: Tìm bộ môn có giáo viên đông nhất
 	select top(1)  MaBM, count(MAGV) as SOLUONG
@@ -759,7 +770,30 @@
 	group by MABM		
 	order by SOLUONG desc -- order by sử dụng được cột SOLUONG, còn having thì không
 	
+	--- Question 16: Tìm giáo viên có lương cao nhất
+
+	select max(GIAOVIEN.LUONG) as N'Lương lớn nhất'
+	from GIAOVIEN
 	
+	select top(2) MaGV, HOTEN, LUONG
+	from GIAOVIEN
+	where LUONG >= ALL (  -- ALL: thể hiện cho 1 list, được sử dụng với các toán tử so sánh
+					select LUONG -- là 1 list
+					from GIAOVIEN
+					)
+	
+	select top(2) MaGV, HOTEN, LUONG
+	from GIAOVIEN
+	where	LUONG =  (  -- all: thể hiện cho 1 list
+					select max(LUONG) -- là 1 giá trị
+					from GIAOVIEN					
+					)
+
+			and
+			MABM = 'HTTT'
+	
+	
+
 
 
 	go
