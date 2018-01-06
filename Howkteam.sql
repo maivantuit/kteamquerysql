@@ -266,8 +266,17 @@
 	values ('006',1,N'Lấy mẫu','2006-10-20','2007-02-20')
 	Insert Into CONGVIEC(MADT,SOTT,TENCV,NGAYBD,NGAYKT)
 	values ('006',2,N'Nuôi cấy','2007-02-21','2008-09-21')
+	Insert Into CONGVIEC(MADT,SOTT,TENCV,NGAYBD,NGAYKT)
+	values ('003',2,N'A','2007-02-21','2008-09-21')
+	Insert Into CONGVIEC(MADT,SOTT,TENCV,NGAYBD,NGAYKT)
+	values ('004',2,N'A','2007-02-21','2008-09-21')
+	Insert Into CONGVIEC(MADT,SOTT,TENCV,NGAYBD,NGAYKT)
+	values ('005',2,N'A','2007-02-21','2008-09-21')
+	Insert Into CONGVIEC(MADT,SOTT,TENCV,NGAYBD,NGAYKT)
+	values ('007',2,N'A','2007-02-21','2008-09-21')
+
 	go
-	
+	select * from CONGVIEC
 --Nhập data cho bảng THAMGIADT
 	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
 	values ('001','002',1,0.0)
@@ -292,7 +301,21 @@
 	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
 	values ('009','002',3,0.5)
 	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
-	values ('009','002',4,1.5)
+	values ('009','002',5,1.5)
+	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
+	values ('009','001',2,1.5)
+	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
+	values ('009','003',2,1.5)
+	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
+	values ('009','004',2,1.5)
+	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
+	values ('009','005',2,1.5)
+	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
+	values ('009','006',2,1.5)
+	Insert Into THAMGIADT(MAGV,MADT,STT,PHUCAP)
+	values ('009','007',2,1.5)
+
+	select * from THAMGIADT
 	go
 	
 --Nhập data cho bảng KHOA
@@ -463,7 +486,25 @@
 		inner join: 
 		left join:
 		right join:
-	9. 
+	9. Hàm thông kê(kết hợp):
+		- COUNT: đếm số dòng dữ liệu hoặc đếm số lượng giá trị của một thuộc tính
+		- AVG: tính giá trị trung bình
+		- MAX: tính giá trị lớn nhất
+		- MIN: tính giá trị nhỏ nhất
+		- SUM: tính tổng
+
+	10. Group by - Having:		
+		- Sử dụng được khi có nhu cầu gom nhóm dữ liệu các thao tác tính toán. Thường dùng với hàm thông kê (kết hợp)
+		- khi sử dụng Group by với các hàm này thì các hàm này chỉ tính toán trên các dòng cùng một nhóm dữ liệu
+		- Having là điều kiện sau khi gom nhóm. like WHERE.
+		- Cái nào có trong group by mới được Having
+		- số cột tại select = tại group by || ngoại trừ hàm count()
+
+	11. Truy vấn lồng:
+		- Sau select hoặc sau where
+		- Đi theo với IN, ALL, NOT IN, ANY, SOME
+		- EXISTS, NOT EXISTS
+
 
 	*/
 	--- Question 1: Cho biết họ tên và lương của tất cả Giáo Viên
@@ -611,9 +652,119 @@
 		MAGV in (select TRUONGBM from BOMON)
 
 
+	--- Question 10: Tìm các giáo viên mà tham gia tất cả các đề tài.
+	-- Phép chia: (có từ tất cả) - (phủ định lại ý nghĩa của đề bài)
+	-- Use not exists:
+	-- Trong bảng ThamGiaDT có 1 MaGV có tất cả các đề tài.
+
+	select distinct TG1.MAGV, HOTEN as N'Tên giáo viên tham gia tất cả đề tài'
+	from THAMGIADT as TG1
+	join GIAOVIEN on GIAOVIEN.MAGV = TG1.MAGV
+	where not exists(	select MaDT
+						from DETAI
+						where not exists (	select MaDT
+											from THAMGIADT as TG2
+											where 
+												TG2.MAGV = TG1.MAGV
+												and
+												DETAI.MADT = TG2.MADT						
+										)
+					)
+	-- Use EXCEPT:
+
+	-- Use Group by:
+
+
+	--- Quesiton 11:
+	select count(MaGV) as N'Số lượng giáo viên', SUM(LUONG)as 'Tổng lương'  from GIAOVIEN
+
+	select count(MaGV) as N'Số lượng giáo viên thuộc HTTT' from GIAOVIEN where MABM = 'HTTT'
+
+	select AVG(LUONG) as N'Lương trung bình của ngành HTTT' from GIAOVIEN where MABM = 'HTTT'
+
+	select min(LUong) as N'Lương min' from GIAOVIEN
+
+	select max(LUong) as N'Lương max' from GIAOVIEN
+
 	
+	--- Question 12: Cho biết số giáo viên trong mỗi bộ môn
+	--GROUP BY - HAVING:
+	
+	select GIAOVIEN.MABM, count(MaGV) as N'Số giáo viên'
+	from GIAOVIEN
+	join BOMON on BOMON.MABM = GIAOVIEN.MABM
+	--where TENBM = N'Hệ thống thông tin'
+	group by GIAOVIEN.MABM
+	--having TENBM = N'Hệ thống thông tin'
+
+	select GIAOVIEN.MABM, count(MaGV) as N'Số giáo viên'
+	from GIAOVIEN
+	join BOMON on BOMON.MABM = GIAOVIEN.MABM
+	where TENBM = N'Hệ thống thông tin'
+	Group by GIAOVIEN.MABM
+
+	select GIAOVIEN.MABM, count(MaGV) as N'Số giáo viên'
+	from GIAOVIEN
+	join BOMON on BOMON.MABM = GIAOVIEN.MABM	
+	group by GIAOVIEN.MABM
+	having GIAOVIEN.MABM = N'HTTT'
+
+
+	--- Question 12: Cho biết bộ môn nào có số giáo viên > 1 và giáo viên đó có lương > 1800
+	-- so sánh HAVING và WHERE
+	select MABM, count(MAGV) as N'Số giáo viên' , LUONG
+	from GIAOVIEN
+	where LUONG >1800
+	group by MABM,LUONG -- số cột tại select = tại group by || ngoại trừ hàm count
+	having count(MAGV)  >1
+
+	select MABM
+	from GIAOVIEN
+	group by MABM
+	having count(MAGV)  >2
+
+	
+	--- Question 13: 
+	-- Truy vấn lồng sau select:
+	-- Truy vấn lồng sau from:
+	-- Truy vấn lồng sau where(hay dùng nhất):
+
+	select HOTEN, LUONG 
+	from GIAOVIEN
+	where MABM = 'HTTT'
+
+
+	--- Question 14: Tìm những giáo viên có lương lớn hơn lương của GV có mã '001'
+	select MAGV, HOTEN, LUONG
+	from GIAOVIEN
+	where LUONG >
+			(select LUONG   --- lấy 1 giá trị để so sánh
+			from GIAOVIEN 
+			where  MAGV = '001'
+			)
+			and
+			HOTEN like N'%Hà'
+
+	select top(1) MAGV, HOTEN, LUONG
+	from GIAOVIEN
+	where LUONG >
+			(select LUONG   --- lấy 1 giá trị để so sánh
+			from GIAOVIEN 
+			where  MAGV = '001'
+			)
+		
+	--- Question 15: Tìm bộ môn có giáo viên đông nhất
+	select top(1)  MaBM, count(MAGV) as SOLUONG
+	from GIAOVIEN
+	group by MABM		
+	order by SOLUONG desc -- order by sử dụng được cột SOLUONG, còn having thì không
+	
+	
+
+
+	go
 	Select * from THAMGIADT
-	--Select * from KHOA
+	Select * from KHOA
 	Select * from BOMON
 	Select * from CONGVIEC
 	Select * from DETAI
