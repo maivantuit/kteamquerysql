@@ -438,6 +438,7 @@
 		[Having <điều kiện nhóm>]  // điều kiện sau khi gom nhóm hoặc sử dụng các hàm thống kê.
 		[Order by <Danh sách các thuộc tính [ASC | DESC] >]
 		[UNIO/INTERSET/EXCEPT <câu truy vấn khác (*)>]
+		[JOIN nằm sau sau from,<where>]
 		+ Sau SELECT:
 			- DISTINCT: liệt kệ những giá trị duy nhất, tránh trùng lặp
 			- Danh sách các thuộc tính, đổi tên thuộc tính với AS, *: lấy tất cả thuộc tính
